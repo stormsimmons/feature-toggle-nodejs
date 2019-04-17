@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/xyzblocks/feature-toggle-nodejs#readme",
   "devDependencies": {
+    "@types/hapi": "^18.0.1",
     "@types/joi": "^14.3.3",
     "@types/mongodb": "^3.1.23",
     "@types/node": "^11.13.4",

@@ -1,7 +1,8 @@
 import * as HapiSwagger from 'hapi-swagger';
 import * as Inert from 'inert';
+import * as MongoDB from 'mongodb';
 import * as Vision from 'vision';
-import { Server } from './index';
+import { AuditRepository, FeatureToggleRepository, Server } from './index';
 
 (async () => {
   const swaggerOptions = {
@@ -20,10 +21,21 @@ import { Server } from './index';
     },
   };
 
-  const server: Server = new Server({
-    host: process.env.HOST || 'localhost',
-    port: parseInt(process.env.PORT, 10) || 8080,
+  const mongoClient = await MongoDB.MongoClient.connect(process.env.CONNECTION_STRING || 'mongodb://localhost:27017', {
+    useNewUrlParser: true,
   });
+
+  const auditRepository: AuditRepository = new AuditRepository(mongoClient);
+  const featureToggleRepository: FeatureToggleRepository = new FeatureToggleRepository(mongoClient);
+
+  const server: Server = new Server(
+    {
+      host: process.env.HOST || 'localhost',
+      port: parseInt(process.env.PORT, 10) || 8080,
+    },
+    auditRepository,
+    featureToggleRepository,
+  );
 
   await server.getServer().register([
     Inert,

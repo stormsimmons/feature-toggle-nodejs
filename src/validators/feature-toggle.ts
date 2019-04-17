@@ -2,7 +2,7 @@ import * as Joi from 'joi';
 import { environmentJoiSchema } from './environment';
 
 export const featureToggleJoiSchema: Joi.SchemaMap = {
-  archived: Joi.string().required(),
+  archived: Joi.boolean().required(),
   createdAt: Joi.number()
     .optional()
     .allow(null),
