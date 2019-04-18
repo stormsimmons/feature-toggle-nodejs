@@ -9,6 +9,10 @@ export class FeatureToggleRepository {
   }
 
   public async create(featureToggle: IFeatureToggle): Promise<IFeatureToggle> {
+    if (await this.find(featureToggle.key)) {
+      return null;
+    }
+
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
     await collection.insertOne(featureToggle);
@@ -19,9 +23,16 @@ export class FeatureToggleRepository {
   public async find(key: string): Promise<IFeatureToggle> {
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
-    return await collection.findOne({
-      key,
-    });
+    return await collection.findOne(
+      {
+        key,
+      },
+      {
+        projection: {
+          _id: 0,
+        },
+      },
+    );
   }
 
   public async findAll(includeArchived: boolean): Promise<Array<IFeatureToggle>> {
@@ -34,11 +45,20 @@ export class FeatureToggleRepository {
           : {
               archived: false,
             },
+        {
+          projection: {
+            _id: 0,
+          },
+        },
       )
       .toArray();
   }
 
   public async update(featureToggle: IFeatureToggle): Promise<IFeatureToggle> {
+    if (!(await this.find(featureToggle.key))) {
+      return null;
+    }
+
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
     await collection.replaceOne(

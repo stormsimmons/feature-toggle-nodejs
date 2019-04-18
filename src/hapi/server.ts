@@ -49,7 +49,13 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
-        return h.response(await this.featureToggleRepository.find(request.params.key)).code(200);
+        const featureToggle = await this.featureToggleRepository.find(request.params.key);
+
+        if (!featureToggle) {
+          return h.response().code(404);
+        }
+
+        return h.response(featureToggle).code(200);
       },
       method: 'GET',
       options: {
@@ -65,7 +71,55 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
-        return h.response(await this.featureToggleRepository.create(request.payload as IFeatureToggle)).code(200);
+        const featureToggle = await this.featureToggleRepository.find(request.params.key);
+
+        if (!featureToggle) {
+          return h.response().code(404);
+        }
+
+        const environment = featureToggle.environments.find((x) => x.key === request.params.environmentKey);
+
+        if (!environment) {
+          return h.response().code(404);
+        }
+
+        if (!environment.enabled) {
+          return h.response(false as any).code(200);
+        }
+
+        if (environment.enabledForAll) {
+          return h.response(true as any).code(200);
+        }
+
+        if (environment.consumers.includes(request.params.consumer)) {
+          return h.response(true as any).code(200);
+        }
+
+        return h.response(false as any).code(200);
+      },
+      method: 'GET',
+      options: {
+        tags: ['api'],
+        validate: {
+          params: {
+            consumer: Joi.string().required(),
+            environmentKey: Joi.string().required(),
+            key: Joi.string().required(),
+          },
+        },
+      },
+      path: '/api/feature-toggle/{key}/enabled/{environmentKey}/{consumer}',
+    });
+
+    this.server.route({
+      handler: async (request: Hapi.Request, h) => {
+        const featureToggle = await this.featureToggleRepository.create(request.payload as IFeatureToggle);
+
+        if (featureToggle) {
+          return h.response().code(303);
+        }
+
+        return h.response(featureToggle).code(200);
       },
       method: 'POST',
       options: {
@@ -82,7 +136,13 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
-        return h.response(await this.featureToggleRepository.update(request.payload as IFeatureToggle)).code(200);
+        const featureToggle = await this.featureToggleRepository.update(request.payload as IFeatureToggle);
+
+        if (!featureToggle) {
+          return h.response().code(404);
+        }
+
+        return h.response(featureToggle).code(200);
       },
       method: 'PUT',
       options: {

@@ -18,6 +18,15 @@ export class AuditRepository {
   public async findAll(): Promise<Array<any>> {
     const collection: MongoDB.Collection = this.db.collection('audits');
 
-    return await collection.find({}).toArray();
+    return await collection
+      .find(
+        {},
+        {
+          projection: {
+            _id: 0,
+          },
+        },
+      )
+      .toArray();
   }
 }
