@@ -132,7 +132,7 @@ export class Server {
 
         const featureToggle = await this.featureToggleRepository.create(request.payload as IFeatureToggle);
 
-        if (featureToggle) {
+        if (!featureToggle) {
           return h.response().code(303);
         }
 
