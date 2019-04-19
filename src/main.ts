@@ -2,7 +2,7 @@ import * as HapiSwagger from 'hapi-swagger';
 import * as Inert from 'inert';
 import * as MongoDB from 'mongodb';
 import * as Vision from 'vision';
-import { AuditRepository, FeatureToggleRepository, Server } from './index';
+import { AuditRepository, FeatureToggleRepository, Server, JwtBearerAuthenticationHelper } from './index';
 
 (async () => {
   const swaggerOptions = {
@@ -45,6 +45,11 @@ import { AuditRepository, FeatureToggleRepository, Server } from './index';
       plugin: HapiSwagger,
     },
   ]);
+
+  await JwtBearerAuthenticationHelper.configure({
+    audience: process.env.audience || 'implicit',
+    authority: process.env.authority || 'https://demo.identityserver.io',
+  });
 
   await server.getServer().start();
 

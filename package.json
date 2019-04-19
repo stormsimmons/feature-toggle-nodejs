@@ -26,11 +26,13 @@
     "typescript": "^3.4.3"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "hapi": "^18.1.0",
     "hapi-swagger": "^9.4.2",
     "inert": "^5.1.3",
     "joi": "^14.3.1",
     "jsonwebtoken": "^8.5.1",
+    "jwk-to-pem": "^2.0.1",
     "mongodb": "^3.2.3",
     "vision": "^5.4.4"
   }

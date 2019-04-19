@@ -3,6 +3,7 @@ import * as Joi from 'joi';
 import { Validators } from '../validators';
 import { AuditRepository, FeatureToggleRepository } from '../repositories';
 import { IFeatureToggle } from '../models';
+import { JwtBearerAuthenticationHelper } from '../helpers';
 
 export class Server {
   protected server: Hapi.Server = null;
@@ -27,6 +28,10 @@ export class Server {
   public configure(): void {
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
+        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+          return h.response().code(401);
+        }
+
         return h.response(await this.auditRepository.findAll()).code(200);
       },
       method: 'GET',
@@ -38,6 +43,10 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
+        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+          return h.response().code(401);
+        }
+
         return h.response(await this.featureToggleRepository.findAll(false)).code(200);
       },
       method: 'GET',
@@ -49,6 +58,10 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
+        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+          return h.response().code(401);
+        }
+
         const featureToggle = await this.featureToggleRepository.find(request.params.key);
 
         if (!featureToggle) {
@@ -113,6 +126,10 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
+        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+          return h.response().code(401);
+        }
+
         const featureToggle = await this.featureToggleRepository.create(request.payload as IFeatureToggle);
 
         if (featureToggle) {
@@ -136,6 +153,10 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
+        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+          return h.response().code(401);
+        }
+
         const featureToggle = await this.featureToggleRepository.update(request.payload as IFeatureToggle);
 
         if (!featureToggle) {
