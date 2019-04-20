@@ -29,3 +29,13 @@ Browse to `http://localhost:8080/swagger`
 IMPORTANT NOTE:
 
 `sudo ufw allow 8080`
+
+## Configuration
+
+### Environment Variables
+
+* `AUDIENCE` - Open ID Configuration Audience.
+* `AUTHORITY` - Open ID Configuration Authority.
+* `CONNECTION_STRING` - Connection String for MongoDB. (default: `mongodb://localhost:27017`)
+* `HOST` Host for Server. (default: `localhost`)
+* `PORT` - Port for Server. (default: `8080`)

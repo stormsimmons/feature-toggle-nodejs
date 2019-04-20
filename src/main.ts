@@ -46,10 +46,12 @@ import { AuditRepository, FeatureToggleRepository, Server, JwtBearerAuthenticati
     },
   ]);
 
-  await JwtBearerAuthenticationHelper.configure({
-    audience: process.env.audience || 'implicit',
-    authority: process.env.authority || 'https://demo.identityserver.io',
-  });
+  if (!process.env.AUDIENCE && process.env.AUTHORITY) {
+    await JwtBearerAuthenticationHelper.configure({
+      audience: process.env.AUDIENCE,
+      authority: process.env.AUTHORITY,
+    });
+  }
 
   await server.getServer().start();
 

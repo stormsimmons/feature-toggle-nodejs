@@ -9,6 +9,10 @@ export class JwtBearerAuthenticationHelper {
   protected static keys: Array<any> = null;
 
   public static authenticated(request: Hapi.Request): boolean {
+    if (!JwtBearerAuthenticationHelper.configuation) {
+      return true;
+    }
+
     const header: string = request.headers['authorization'];
 
     if (!header) {
