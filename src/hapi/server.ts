@@ -136,6 +136,12 @@ export class Server {
           return h.response().code(303);
         }
 
+        this.auditRepository.create({
+          message: `Feature '${featureToggle.key}' was created.`,
+          timestamp: new Date().getTime(),
+          user: JwtBearerAuthenticationHelper.getUser(request),
+        });
+
         return h.response(featureToggle).code(200);
       },
       method: 'POST',
@@ -162,6 +168,12 @@ export class Server {
         if (!featureToggle) {
           return h.response().code(404);
         }
+
+        this.auditRepository.create({
+          message: `Feature '${featureToggle.key}' was updated.`,
+          timestamp: new Date().getTime(),
+          user: JwtBearerAuthenticationHelper.getUser(request),
+        });
 
         return h.response(featureToggle).code(200);
       },

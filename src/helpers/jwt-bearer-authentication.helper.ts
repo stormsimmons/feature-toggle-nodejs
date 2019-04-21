@@ -61,4 +61,32 @@ export class JwtBearerAuthenticationHelper {
 
     JwtBearerAuthenticationHelper.keys = jwks.data.keys;
   }
+
+  public static getUser(request: Hapi.Request): boolean {
+    if (!JwtBearerAuthenticationHelper.configuation) {
+      return null;
+    }
+
+    const header: string = request.headers['authorization'];
+
+    if (!header) {
+      return null;
+    }
+
+    const headerSplitted: Array<string> = header.split(' ');
+
+    if (headerSplitted.length !== 2) {
+      return null;
+    }
+
+    if (headerSplitted[0].toLowerCase() !== 'bearer') {
+      return false;
+    }
+
+    const token: string = headerSplitted[1];
+
+    const decodedToken = JsonWebToken.decode(token, { complete: true });
+
+    return decodedToken.payload.email;
+  }
 }
