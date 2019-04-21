@@ -9,6 +9,9 @@ export class FeatureToggleRepository {
   }
 
   public async create(featureToggle: IFeatureToggle): Promise<IFeatureToggle> {
+    featureToggle.createdAt = new Date().getTime();
+    featureToggle.updatedAt = new Date().getTime();
+
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
     await collection.insertOne(featureToggle);
@@ -42,6 +45,8 @@ export class FeatureToggleRepository {
   }
 
   public async update(featureToggle: IFeatureToggle): Promise<IFeatureToggle> {
+    featureToggle.updatedAt = new Date().getTime();
+
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
     await collection.replaceOne(
