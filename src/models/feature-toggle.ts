@@ -12,4 +12,6 @@ export interface IFeatureToggle {
   name: string;
 
   updatedAt: number;
+
+  user: string;
 }

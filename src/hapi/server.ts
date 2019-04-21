@@ -1,9 +1,10 @@
 import * as Hapi from 'hapi';
 import * as Joi from 'joi';
 import { Validators } from '../validators';
-import { AuditRepository, FeatureToggleRepository } from '../repositories';
+import { AuditRepository } from '../repositories';
 import { IFeatureToggle } from '../models';
 import { JwtBearerAuthenticationHelper } from '../helpers';
+import { FeatureToggleService } from '../services';
 
 export class Server {
   protected server: Hapi.Server = null;
@@ -11,7 +12,7 @@ export class Server {
   constructor(
     options: Hapi.ServerOptions,
     protected auditRepository: AuditRepository,
-    protected featureToggleRepository: FeatureToggleRepository,
+    protected featureToggleService: FeatureToggleService,
   ) {
     this.server = new Hapi.Server({
       ...options,
@@ -47,7 +48,14 @@ export class Server {
           return h.response().code(401);
         }
 
-        return h.response(await this.featureToggleRepository.findAll(false)).code(200);
+        return h
+          .response(
+            await this.featureToggleService.findAll(
+              request.query.includeArchived === 'true',
+              JwtBearerAuthenticationHelper.getUser(request),
+            ),
+          )
+          .code(200);
       },
       method: 'GET',
       options: {
@@ -62,7 +70,10 @@ export class Server {
           return h.response().code(401);
         }
 
-        const featureToggle = await this.featureToggleRepository.find(request.params.key);
+        const featureToggle = await this.featureToggleService.find(
+          request.params.key,
+          JwtBearerAuthenticationHelper.getUser(request),
+        );
 
         if (!featureToggle) {
           return h.response().code(404);
@@ -84,31 +95,17 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
-        const featureToggle = await this.featureToggleRepository.find(request.params.key);
+        const result: boolean = await this.featureToggleService.enabled(
+          request.params.key,
+          request.params.environmentKey,
+          request.params.consumer,
+        );
 
-        if (!featureToggle) {
+        if (result === null) {
           return h.response().code(404);
         }
 
-        const environment = featureToggle.environments.find((x) => x.key === request.params.environmentKey);
-
-        if (!environment) {
-          return h.response().code(404);
-        }
-
-        if (!environment.enabled) {
-          return h.response(false as any).code(200);
-        }
-
-        if (environment.enabledForAll) {
-          return h.response(true as any).code(200);
-        }
-
-        if (environment.consumers.includes(request.params.consumer)) {
-          return h.response(true as any).code(200);
-        }
-
-        return h.response(false as any).code(200);
+        return h.response(result as any).code(200);
       },
       method: 'GET',
       options: {
@@ -130,17 +127,14 @@ export class Server {
           return h.response().code(401);
         }
 
-        const featureToggle = await this.featureToggleRepository.create(request.payload as IFeatureToggle);
+        const featureToggle = await this.featureToggleService.create(
+          request.payload as IFeatureToggle,
+          JwtBearerAuthenticationHelper.getUser(request),
+        );
 
         if (!featureToggle) {
           return h.response().code(303);
         }
-
-        this.auditRepository.create({
-          message: `Feature '${featureToggle.key}' was created.`,
-          timestamp: new Date().getTime(),
-          user: JwtBearerAuthenticationHelper.getUser(request),
-        });
 
         return h.response(featureToggle).code(200);
       },
@@ -163,17 +157,14 @@ export class Server {
           return h.response().code(401);
         }
 
-        const featureToggle = await this.featureToggleRepository.update(request.payload as IFeatureToggle);
+        const featureToggle = await this.featureToggleService.update(
+          request.payload as IFeatureToggle,
+          JwtBearerAuthenticationHelper.getUser(request),
+        );
 
         if (!featureToggle) {
           return h.response().code(404);
         }
-
-        this.auditRepository.create({
-          message: `Feature '${featureToggle.key}' was updated.`,
-          timestamp: new Date().getTime(),
-          user: JwtBearerAuthenticationHelper.getUser(request),
-        });
 
         return h.response(featureToggle).code(200);
       },

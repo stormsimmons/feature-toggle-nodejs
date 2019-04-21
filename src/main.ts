@@ -3,6 +3,7 @@ import * as Inert from 'inert';
 import * as MongoDB from 'mongodb';
 import * as Vision from 'vision';
 import { AuditRepository, FeatureToggleRepository, Server, JwtBearerAuthenticationHelper } from './index';
+import { FeatureToggleService } from './services';
 
 (async () => {
   const swaggerOptions = {
@@ -27,6 +28,11 @@ import { AuditRepository, FeatureToggleRepository, Server, JwtBearerAuthenticati
 
   const auditRepository: AuditRepository = new AuditRepository(mongoClient);
   const featureToggleRepository: FeatureToggleRepository = new FeatureToggleRepository(mongoClient);
+  const featureToggleService: FeatureToggleService = new FeatureToggleService(
+    auditRepository,
+    featureToggleRepository,
+    true,
+  );
 
   const server: Server = new Server(
     {
@@ -34,7 +40,7 @@ import { AuditRepository, FeatureToggleRepository, Server, JwtBearerAuthenticati
       port: parseInt(process.env.PORT, 10) || 8080,
     },
     auditRepository,
-    featureToggleRepository,
+    featureToggleService,
   );
 
   await server.getServer().register([
@@ -46,10 +52,10 @@ import { AuditRepository, FeatureToggleRepository, Server, JwtBearerAuthenticati
     },
   ]);
 
-  if (!process.env.AUDIENCE && process.env.AUTHORITY) {
+  if (!process.env.AUDIENCE && !process.env.AUTHORITY) {
     await JwtBearerAuthenticationHelper.configure({
-      audience: process.env.AUDIENCE,
-      authority: process.env.AUTHORITY,
+      audience: process.env.AUDIENCE || 'implicit',
+      authority: process.env.AUTHORITY || 'https://demo.identityserver.io',
     });
   }
 

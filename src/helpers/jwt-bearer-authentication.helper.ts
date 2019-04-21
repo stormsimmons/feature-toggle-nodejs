@@ -62,7 +62,7 @@ export class JwtBearerAuthenticationHelper {
     JwtBearerAuthenticationHelper.keys = jwks.data.keys;
   }
 
-  public static getUser(request: Hapi.Request): boolean {
+  public static getUser(request: Hapi.Request): string {
     if (!JwtBearerAuthenticationHelper.configuation) {
       return null;
     }
@@ -80,7 +80,7 @@ export class JwtBearerAuthenticationHelper {
     }
 
     if (headerSplitted[0].toLowerCase() !== 'bearer') {
-      return false;
+      return null;
     }
 
     const token: string = headerSplitted[1];

@@ -9,10 +9,6 @@ export class FeatureToggleRepository {
   }
 
   public async create(featureToggle: IFeatureToggle): Promise<IFeatureToggle> {
-    if (await this.find(featureToggle.key)) {
-      return null;
-    }
-
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
     await collection.insertOne(featureToggle);
@@ -24,9 +20,7 @@ export class FeatureToggleRepository {
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
     return await collection.findOne(
-      {
-        key,
-      },
+      { key },
       {
         projection: {
           _id: 0,
@@ -35,30 +29,19 @@ export class FeatureToggleRepository {
     );
   }
 
-  public async findAll(includeArchived: boolean): Promise<Array<IFeatureToggle>> {
+  public async findAll(includeArchived: boolean, user: string): Promise<Array<IFeatureToggle>> {
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
     return await collection
-      .find(
-        includeArchived
-          ? {}
-          : {
-              archived: false,
-            },
-        {
-          projection: {
-            _id: 0,
-          },
+      .find(includeArchived ? { user } : { archived: false, user }, {
+        projection: {
+          _id: 0,
         },
-      )
+      })
       .toArray();
   }
 
   public async update(featureToggle: IFeatureToggle): Promise<IFeatureToggle> {
-    if (!(await this.find(featureToggle.key))) {
-      return null;
-    }
-
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
     await collection.replaceOne(

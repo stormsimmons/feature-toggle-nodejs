@@ -14,4 +14,7 @@ export const featureToggleJoiSchema: Joi.SchemaMap = {
   updatedAt: Joi.number()
     .optional()
     .allow(null),
+  user: Joi.string()
+    .optional()
+    .allow(null),
 };
