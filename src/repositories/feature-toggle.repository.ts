@@ -35,11 +35,24 @@ export class FeatureToggleRepository {
   public async findAll(includeArchived: boolean, user: string): Promise<Array<IFeatureToggle>> {
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
+    const query: any = {};
+
+    if (!includeArchived) {
+      query.archived = false;
+    }
+
+    if (user) {
+      query.user = user;
+    }
+
     return await collection
-      .find(includeArchived ? { user } : { archived: false, user }, {
+      .find(query, {
         projection: {
           _id: 0,
         },
+      })
+      .sort({
+        key: 1,
       })
       .toArray();
   }

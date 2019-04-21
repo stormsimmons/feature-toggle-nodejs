@@ -27,6 +27,10 @@ export class AuditRepository {
           },
         },
       )
+      .sort({
+        timestamp: -1,
+      })
+      .limit(25)
       .toArray();
   }
 }

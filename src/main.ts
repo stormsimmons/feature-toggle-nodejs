@@ -36,7 +36,7 @@ import {
   const featureToggleService: FeatureToggleService = new FeatureToggleService(
     auditRepository,
     featureToggleRepository,
-    true,
+    false,
   );
 
   const server: Server = new Server(
