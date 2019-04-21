@@ -2,8 +2,7 @@ import * as HapiSwagger from 'hapi-swagger';
 import * as Inert from 'inert';
 import * as MongoDB from 'mongodb';
 import * as Vision from 'vision';
-import { AuditRepository, FeatureToggleRepository, Server, JwtBearerAuthenticationHelper } from './index';
-import { FeatureToggleService } from './services';
+import { AuditRepository, FeatureToggleRepository, Server, JwtBearerAuthenticationHelper, FeatureToggleService } from './index';
 
 (async () => {
   const swaggerOptions = {
