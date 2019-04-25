@@ -42,7 +42,11 @@ export class FeatureToggleRepository {
     }
 
     if (user) {
-      query.user = user;
+      query.$or = [
+        { user },
+        { roleBasedAccessControlItems: { $elemMatch: { subject: user, role: 'administrator' } } },
+        { roleBasedAccessControlItems: { $elemMatch: { subject: user, role: 'viewer' } } },
+      ];
     }
 
     return await collection
