@@ -57,7 +57,11 @@ export class FeatureToggleService {
   public async find(key: string, user: string): Promise<IFeatureToggle> {
     const featureToggle: IFeatureToggle = await this.featureToggleRepository.find(key);
 
-    if (this.authorizationEnabled && featureToggle.user !== user) {
+    if (
+      this.authorizationEnabled &&
+      !this.authorized(featureToggle, user, 'administrator') &&
+      !this.authorized(featureToggle, user, 'viewer')
+    ) {
       return null;
     }
 
@@ -75,7 +79,7 @@ export class FeatureToggleService {
       return null;
     }
 
-    if (this.authorizationEnabled && exisitingFeatureToggle.user !== user) {
+    if (this.authorizationEnabled && !this.authorized(featureToggle, user, 'administrator')) {
       return null;
     }
 
@@ -88,5 +92,17 @@ export class FeatureToggleService {
     });
 
     return featureToggle;
+  }
+
+  protected authorized(featureToggle: IFeatureToggle, user: string, role: string): boolean {
+    if (featureToggle.user === user) {
+      return true;
+    }
+
+    if (featureToggle.roleBasedAccessControlItems.find((x) => x.subject === user && x.role === role)) {
+      return true;
+    }
+
+    return false;
   }
 }

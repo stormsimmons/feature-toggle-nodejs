@@ -1,5 +1,6 @@
 import * as Joi from 'joi';
 import { environmentJoiSchema } from './environment';
+import { roleBasedAccessControlItemJoiSchema } from './role-based-access-control-item';
 
 export const featureToggleJoiSchema: Joi.SchemaMap = {
   archived: Joi.boolean().required(),
@@ -11,6 +12,9 @@ export const featureToggleJoiSchema: Joi.SchemaMap = {
     .required(),
   key: Joi.string().required(),
   name: Joi.string().required(),
+  roleBasedAccessControlItems: Joi.array()
+    .items(roleBasedAccessControlItemJoiSchema)
+    .required(),
   updatedAt: Joi.number()
     .optional()
     .allow(null),
