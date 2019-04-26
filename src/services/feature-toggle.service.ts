@@ -2,11 +2,7 @@ import { FeatureToggleRepository, AuditRepository } from '../repositories';
 import { IFeatureToggle } from '../models';
 
 export class FeatureToggleService {
-  constructor(
-    protected auditRepository: AuditRepository,
-    protected featureToggleRepository: FeatureToggleRepository,
-    protected authorizationEnabled: boolean,
-  ) {}
+  constructor(protected auditRepository: AuditRepository, protected featureToggleRepository: FeatureToggleRepository) {}
 
   public async create(featureToggle: IFeatureToggle, user: string): Promise<IFeatureToggle> {
     if (await this.featureToggleRepository.find(featureToggle.key)) {
@@ -57,25 +53,17 @@ export class FeatureToggleService {
   public async find(key: string, user: string): Promise<IFeatureToggle> {
     const featureToggle: IFeatureToggle = await this.featureToggleRepository.find(key);
 
-    if (this.authorizationEnabled && featureToggle.user !== user) {
-      return null;
-    }
-
     return featureToggle;
   }
 
   public async findAll(includeArchived: boolean, user: string): Promise<Array<IFeatureToggle>> {
-    return await this.featureToggleRepository.findAll(includeArchived, this.authorizationEnabled ? user : null);
+    return await this.featureToggleRepository.findAll(includeArchived, null);
   }
 
   public async update(featureToggle: IFeatureToggle, user: string): Promise<IFeatureToggle> {
     const exisitingFeatureToggle: IFeatureToggle = await this.featureToggleRepository.find(featureToggle.key);
 
     if (!exisitingFeatureToggle) {
-      return null;
-    }
-
-    if (this.authorizationEnabled && exisitingFeatureToggle.user !== user) {
       return null;
     }
 
