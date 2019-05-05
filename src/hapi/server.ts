@@ -38,6 +38,13 @@ export class Server {
       method: 'GET',
       options: {
         tags: ['api'],
+        validate: {
+          query: {
+            user: Joi.string()
+              .optional()
+              .allow(null),
+          },
+        },
       },
       path: '/api/audit',
     });
