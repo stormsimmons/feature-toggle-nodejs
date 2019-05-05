@@ -14,7 +14,10 @@ export class FeatureToggleRepository {
 
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
-    await collection.insertOne(featureToggle);
+    await collection.insertOne({
+      ...featureToggle,
+      tenantId,
+    });
 
     return featureToggle;
   }
@@ -23,10 +26,11 @@ export class FeatureToggleRepository {
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
     return await collection.findOne(
-      { key },
+      { key, tenantId },
       {
         projection: {
           _id: 0,
+          tenantId: 0,
         },
       },
     );
@@ -35,7 +39,7 @@ export class FeatureToggleRepository {
   public async findAll(includeArchived: boolean, tenantId: string): Promise<Array<IFeatureToggle>> {
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
-    const query: any = {};
+    const query: any = { tenantId };
 
     if (!includeArchived) {
       query.archived = false;
@@ -45,6 +49,7 @@ export class FeatureToggleRepository {
       .find(query, {
         projection: {
           _id: 0,
+          tenantId: 0,
         },
       })
       .sort({
@@ -57,6 +62,7 @@ export class FeatureToggleRepository {
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
     const query: any = {
+      tenantId,
       user,
     };
 
@@ -68,6 +74,7 @@ export class FeatureToggleRepository {
       .find(query, {
         projection: {
           _id: 0,
+          tenantId: 0,
         },
       })
       .sort({
@@ -84,6 +91,7 @@ export class FeatureToggleRepository {
     await collection.replaceOne(
       {
         key: featureToggle.key,
+        tenantId,
       },
       featureToggle,
     );

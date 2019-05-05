@@ -13,11 +13,14 @@ export class FeatureToggleService {
 
     featureToggle = await this.featureToggleRepository.create(featureToggle, tenantId);
 
-    await this.auditRepository.create({
-      message: `Feature '${featureToggle.key}' was created.`,
-      timestamp: new Date().getTime(),
-      user: user,
-    }, tenantId);
+    await this.auditRepository.create(
+      {
+        message: `Feature '${featureToggle.key}' was created.`,
+        timestamp: new Date().getTime(),
+        user: user,
+      },
+      tenantId,
+    );
 
     return featureToggle;
   }
@@ -69,11 +72,14 @@ export class FeatureToggleService {
 
     featureToggle = await this.featureToggleRepository.update(featureToggle, tenantId);
 
-    await this.auditRepository.create({
-      message: `Feature '${featureToggle.key}' was updated.`,
-      timestamp: new Date().getTime(),
-      user: user,
-    }, tenantId);
+    await this.auditRepository.create(
+      {
+        message: `Feature '${featureToggle.key}' was updated.`,
+        timestamp: new Date().getTime(),
+        user: user,
+      },
+      tenantId,
+    );
 
     return featureToggle;
   }

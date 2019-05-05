@@ -34,15 +34,25 @@ export class Server {
         }
 
         if (request.query.user) {
-          return h.response(await this.auditRepository.findAllByUser(request.query.user as string)).code(200);
+          return h
+            .response(
+              await this.auditRepository.findAllByUser(
+                request.query.user as string,
+                TenantIdHelper.getTenantId(request),
+              ),
+            )
+            .code(200);
         }
 
-        return h.response(await this.auditRepository.findAll()).code(200);
+        return h.response(await this.auditRepository.findAll(TenantIdHelper.getTenantId(request))).code(200);
       },
       method: 'GET',
       options: {
         tags: ['api'],
         validate: {
+          params: {
+            tenantId: Joi.string().required(),
+          },
           query: {
             user: Joi.string()
               .optional()
@@ -50,7 +60,7 @@ export class Server {
           },
         },
       },
-      path: '/api/audit',
+      path: '/api/{tenantId}/audit',
     });
 
     this.server.route({
@@ -72,8 +82,13 @@ export class Server {
       method: 'GET',
       options: {
         tags: ['api'],
+        validate: {
+          params: {
+            tenantId: Joi.string().required(),
+          },
+        },
       },
-      path: '/api/feature-toggle',
+      path: '/api/{tenantId}/feature-toggle',
     });
 
     this.server.route({
@@ -100,10 +115,11 @@ export class Server {
         validate: {
           params: {
             key: Joi.string().required(),
+            tenantId: Joi.string().required(),
           },
         },
       },
-      path: '/api/feature-toggle/{key}',
+      path: '/api/{tenantId}/feature-toggle/{key}',
     });
 
     this.server.route({
@@ -129,10 +145,11 @@ export class Server {
             consumer: Joi.string().required(),
             environmentKey: Joi.string().required(),
             key: Joi.string().required(),
+            tenantId: Joi.string().required(),
           },
         },
       },
-      path: '/api/feature-toggle/{key}/enabled/{environmentKey}/{consumer}',
+      path: '/api/{tenantId}/feature-toggle/{key}/enabled/{environmentKey}/{consumer}',
     });
 
     this.server.route({
@@ -159,11 +176,12 @@ export class Server {
         validate: {
           params: {
             key: Joi.string().required(),
+            tenantId: Joi.string().required(),
           },
           payload: Validators.featureToggleJoiSchema,
         },
       },
-      path: '/api/feature-toggle/{key}',
+      path: '/api/{tenantId}/feature-toggle/{key}',
     });
 
     this.server.route({
@@ -190,11 +208,12 @@ export class Server {
         validate: {
           params: {
             key: Joi.string().required(),
+            tenantId: Joi.string().required(),
           },
           payload: Validators.featureToggleJoiSchema,
         },
       },
-      path: '/api/feature-toggle/{key}',
+      path: '/api/{tenantId}/feature-toggle/{key}',
     });
   }
 

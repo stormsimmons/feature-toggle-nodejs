@@ -1,4 +1,5 @@
 import * as MongoDB from 'mongodb';
+import { IAudit } from '../models';
 
 export class AuditRepository {
   protected db: MongoDB.Db = null;
@@ -7,23 +8,29 @@ export class AuditRepository {
     this.db = mongoClient.db('feature-toggle-nodejs');
   }
 
-  public async create(audit: any, tenantId: string): Promise<any> {
+  public async create(audit: IAudit, tenantId: string): Promise<IAudit> {
     const collection: MongoDB.Collection = this.db.collection('audits');
 
-    await collection.insertOne(audit);
+    await collection.insertOne({
+      ...audit,
+      tenantId,
+    });
 
     return audit;
   }
 
-  public async findAll(): Promise<Array<any>> {
+  public async findAll(tenantId: string): Promise<Array<IAudit>> {
     const collection: MongoDB.Collection = this.db.collection('audits');
 
     return await collection
       .find(
-        {},
+        {
+          tenantId,
+        },
         {
           projection: {
             _id: 0,
+            tenantId: 0,
           },
         },
       )
@@ -34,17 +41,19 @@ export class AuditRepository {
       .toArray();
   }
 
-  public async findAllByUser(user: string): Promise<Array<any>> {
+  public async findAllByUser(user: string, tenantId: string): Promise<Array<IAudit>> {
     const collection: MongoDB.Collection = this.db.collection('audits');
 
     return await collection
       .find(
         {
+          tenantId,
           user,
         },
         {
           projection: {
             _id: 0,
+            tenantId: 0,
           },
         },
       )
