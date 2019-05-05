@@ -8,7 +8,7 @@ export class FeatureToggleRepository {
     this.db = mongoClient.db('feature-toggle-nodejs');
   }
 
-  public async create(featureToggle: IFeatureToggle): Promise<IFeatureToggle> {
+  public async create(featureToggle: IFeatureToggle, tenantId: string): Promise<IFeatureToggle> {
     featureToggle.createdAt = new Date().getTime();
     featureToggle.updatedAt = new Date().getTime();
 
@@ -19,7 +19,7 @@ export class FeatureToggleRepository {
     return featureToggle;
   }
 
-  public async find(key: string): Promise<IFeatureToggle> {
+  public async find(key: string, tenantId: string): Promise<IFeatureToggle> {
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
     return await collection.findOne(
@@ -32,17 +32,13 @@ export class FeatureToggleRepository {
     );
   }
 
-  public async findAll(includeArchived: boolean, user: string): Promise<Array<IFeatureToggle>> {
+  public async findAll(includeArchived: boolean, tenantId: string): Promise<Array<IFeatureToggle>> {
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');
 
     const query: any = {};
 
     if (!includeArchived) {
       query.archived = false;
-    }
-
-    if (user) {
-      query.user = user;
     }
 
     return await collection
@@ -57,7 +53,30 @@ export class FeatureToggleRepository {
       .toArray();
   }
 
-  public async update(featureToggle: IFeatureToggle): Promise<IFeatureToggle> {
+  public async findAllByUser(includeArchived: boolean, user: string, tenantId: string): Promise<Array<IFeatureToggle>> {
+    const collection: MongoDB.Collection = this.db.collection('feature-toggles');
+
+    const query: any = {
+      user,
+    };
+
+    if (!includeArchived) {
+      query.archived = false;
+    }
+
+    return await collection
+      .find(query, {
+        projection: {
+          _id: 0,
+        },
+      })
+      .sort({
+        key: 1,
+      })
+      .toArray();
+  }
+
+  public async update(featureToggle: IFeatureToggle, tenantId: string): Promise<IFeatureToggle> {
     featureToggle.updatedAt = new Date().getTime();
 
     const collection: MongoDB.Collection = this.db.collection('feature-toggles');

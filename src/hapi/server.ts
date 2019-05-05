@@ -3,7 +3,7 @@ import * as Joi from 'joi';
 import { Validators } from '../validators';
 import { AuditRepository } from '../repositories';
 import { IFeatureToggle } from '../models';
-import { JwtBearerAuthenticationHelper } from '../helpers';
+import { JwtBearerAuthenticationHelper, TenantIdHelper } from '../helpers';
 import { FeatureToggleService } from '../services';
 
 export class Server {
@@ -33,7 +33,11 @@ export class Server {
           return h.response().code(401);
         }
 
-        return h.response(await this.auditRepository.findAll(request.query.user as string)).code(200);
+        if (request.query.user) {
+          return h.response(await this.auditRepository.findAllByUser(request.query.user as string)).code(200);
+        }
+
+        return h.response(await this.auditRepository.findAll()).code(200);
       },
       method: 'GET',
       options: {
@@ -60,6 +64,7 @@ export class Server {
             await this.featureToggleService.findAll(
               request.query.includeArchived === 'true',
               JwtBearerAuthenticationHelper.getUser(request),
+              TenantIdHelper.getTenantId(request),
             ),
           )
           .code(200);
@@ -80,6 +85,7 @@ export class Server {
         const featureToggle = await this.featureToggleService.find(
           request.params.key,
           JwtBearerAuthenticationHelper.getUser(request),
+          TenantIdHelper.getTenantId(request),
         );
 
         if (!featureToggle) {
@@ -106,6 +112,7 @@ export class Server {
           request.params.key,
           request.params.environmentKey,
           request.params.consumer,
+          TenantIdHelper.getTenantId(request),
         );
 
         if (result === null) {
@@ -137,6 +144,7 @@ export class Server {
         const featureToggle = await this.featureToggleService.create(
           request.payload as IFeatureToggle,
           JwtBearerAuthenticationHelper.getUser(request),
+          TenantIdHelper.getTenantId(request),
         );
 
         if (!featureToggle) {
@@ -167,6 +175,7 @@ export class Server {
         const featureToggle = await this.featureToggleService.update(
           request.payload as IFeatureToggle,
           JwtBearerAuthenticationHelper.getUser(request),
+          TenantIdHelper.getTenantId(request),
         );
 
         if (!featureToggle) {
