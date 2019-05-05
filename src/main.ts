@@ -33,11 +33,7 @@ import {
 
   const auditRepository: AuditRepository = new AuditRepository(mongoClient);
   const featureToggleRepository: FeatureToggleRepository = new FeatureToggleRepository(mongoClient);
-  const featureToggleService: FeatureToggleService = new FeatureToggleService(
-    auditRepository,
-    featureToggleRepository,
-    false,
-  );
+  const featureToggleService: FeatureToggleService = new FeatureToggleService(auditRepository, featureToggleRepository);
 
   const server: Server = new Server(
     {

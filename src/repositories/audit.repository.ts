@@ -15,12 +15,16 @@ export class AuditRepository {
     return audit;
   }
 
-  public async findAll(): Promise<Array<any>> {
+  public async findAll(user: string): Promise<Array<any>> {
     const collection: MongoDB.Collection = this.db.collection('audits');
 
     return await collection
       .find(
-        {},
+        user
+          ? {
+              user,
+            }
+          : {},
         {
           projection: {
             _id: 0,

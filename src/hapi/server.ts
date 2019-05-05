@@ -33,7 +33,7 @@ export class Server {
           return h.response().code(401);
         }
 
-        return h.response(await this.auditRepository.findAll()).code(200);
+        return h.response(await this.auditRepository.findAll(request.query.user as string)).code(200);
       },
       method: 'GET',
       options: {
