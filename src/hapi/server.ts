@@ -1,10 +1,11 @@
 import * as Hapi from 'hapi';
 import * as Joi from 'joi';
 import { Validators } from '../validators';
-import { AuditRepository } from '../repositories';
-import { IFeatureToggle } from '../models';
+import { AuditRepository, TenantRepository } from '../repositories';
+import { IFeatureToggle, ITenant } from '../models';
 import { JwtBearerAuthenticationHelper, TenantIdHelper } from '../helpers';
-import { FeatureToggleService } from '../services';
+import { FeatureToggleService, TenantService } from '../services';
+import { tenantJoiSchema } from '../validators/tenant';
 
 export class Server {
   protected server: Hapi.Server = null;
@@ -13,6 +14,8 @@ export class Server {
     options: Hapi.ServerOptions,
     protected auditRepository: AuditRepository,
     protected featureToggleService: FeatureToggleService,
+    protected tenantRepository: TenantRepository,
+    protected tenantService: TenantService,
   ) {
     this.server = new Hapi.Server({
       ...options,
@@ -31,6 +34,10 @@ export class Server {
       handler: async (request: Hapi.Request, h) => {
         if (!JwtBearerAuthenticationHelper.authenticated(request)) {
           return h.response().code(401);
+        }
+
+        if (!(await this.authorizedTenant(request))) {
+          return h.response().code(403);
         }
 
         if (request.query.user) {
@@ -69,6 +76,10 @@ export class Server {
           return h.response().code(401);
         }
 
+        if (!(await this.authorizedTenant(request))) {
+          return h.response().code(403);
+        }
+
         return h
           .response(
             await this.featureToggleService.findAll(
@@ -95,6 +106,10 @@ export class Server {
       handler: async (request: Hapi.Request, h) => {
         if (!JwtBearerAuthenticationHelper.authenticated(request)) {
           return h.response().code(401);
+        }
+
+        if (!(await this.authorizedTenant(request))) {
+          return h.response().code(403);
         }
 
         const featureToggle = await this.featureToggleService.find(
@@ -158,6 +173,10 @@ export class Server {
           return h.response().code(401);
         }
 
+        if (!(await this.authorizedTenant(request))) {
+          return h.response().code(403);
+        }
+
         const featureToggle = await this.featureToggleService.create(
           request.payload as IFeatureToggle,
           JwtBearerAuthenticationHelper.getUser(request),
@@ -190,6 +209,10 @@ export class Server {
           return h.response().code(401);
         }
 
+        if (!(await this.authorizedTenant(request))) {
+          return h.response().code(403);
+        }
+
         const featureToggle = await this.featureToggleService.update(
           request.payload as IFeatureToggle,
           JwtBearerAuthenticationHelper.getUser(request),
@@ -215,9 +238,101 @@ export class Server {
       },
       path: '/api/{tenantId}/feature-toggle/{key}',
     });
+
+    this.server.route({
+      handler: async (request: Hapi.Request, h) => {
+        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+          return h.response().code(401);
+        }
+
+        const tenants = await this.tenantService.findAll(JwtBearerAuthenticationHelper.getUser(request));
+
+        return h.response(tenants).code(200);
+      },
+      method: 'GET',
+      options: {
+        tags: ['api'],
+      },
+      path: '/api/tenant',
+    });
+
+    this.server.route({
+      handler: async (request: Hapi.Request, h) => {
+        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+          return h.response().code(401);
+        }
+
+        const tenant = await this.tenantService.create(
+          request.payload as ITenant,
+          JwtBearerAuthenticationHelper.getUser(request),
+        );
+
+        if (!tenant) {
+          return h.response().code(303);
+        }
+
+        return h.response(tenant).code(200);
+      },
+      method: 'POST',
+      options: {
+        tags: ['api'],
+        validate: {
+          payload: tenantJoiSchema,
+        },
+      },
+      path: '/api/tenant',
+    });
+
+    this.server.route({
+      handler: async (request: Hapi.Request, h) => {
+        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+          return h.response().code(401);
+        }
+
+        const tenant = await this.tenantService.update(
+          request.payload as ITenant,
+          JwtBearerAuthenticationHelper.getUser(request),
+        );
+
+        if (!tenant) {
+          return h.response().code(404);
+        }
+
+        return h.response(tenant).code(200);
+      },
+      method: 'PUT',
+      options: {
+        tags: ['api'],
+        validate: {
+          params: {
+            key: Joi.string().required(),
+          },
+          payload: tenantJoiSchema,
+        },
+      },
+      path: '/api/tenant/{key}',
+    });
   }
 
   public getServer(): Hapi.Server {
     return this.server;
+  }
+
+  protected async authorizedTenant(request: Hapi.Request): Promise<boolean> {
+    const user: string = JwtBearerAuthenticationHelper.getUser(request);
+
+    const tenantId: string = TenantIdHelper.getTenantId(request);
+
+    const tenant: ITenant = await this.tenantRepository.find(tenantId);
+
+    if (!tenant) {
+      return false;
+    }
+
+    if (!tenant.users.includes(user)) {
+      return false;
+    }
+
+    return true;
   }
 }

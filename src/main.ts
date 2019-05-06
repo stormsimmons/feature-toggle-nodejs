@@ -9,6 +9,8 @@ import {
   JwtBearerAuthenticationHelper,
   FeatureToggleService,
 } from './index';
+import { TenantRepository } from './repositories';
+import { TenantService } from './services';
 
 (async () => {
   const swaggerOptions = {
@@ -34,6 +36,8 @@ import {
   const auditRepository: AuditRepository = new AuditRepository(mongoClient);
   const featureToggleRepository: FeatureToggleRepository = new FeatureToggleRepository(mongoClient);
   const featureToggleService: FeatureToggleService = new FeatureToggleService(auditRepository, featureToggleRepository);
+  const tenantRepository: TenantRepository = new TenantRepository(mongoClient);
+  const tenantService: TenantService = new TenantService(auditRepository, tenantRepository);
 
   const server: Server = new Server(
     {
@@ -42,6 +46,8 @@ import {
     },
     auditRepository,
     featureToggleService,
+    tenantRepository,
+    tenantService,
   );
 
   await server.getServer().register([
@@ -53,7 +59,7 @@ import {
     },
   ]);
 
-  if (!process.env.AUDIENCE && !process.env.AUTHORITY) {
+  if (process.env.AUDIENCE && process.env.AUTHORITY) {
     await JwtBearerAuthenticationHelper.configure({
       audience: process.env.AUDIENCE || 'implicit',
       authority: process.env.AUTHORITY || 'https://demo.identityserver.io',

@@ -15,7 +15,7 @@ export class FeatureToggleService {
 
     await this.auditRepository.create(
       {
-        message: `Feature '${featureToggle.key}' was created.`,
+        message: `Feature Toggle '${featureToggle.key}' was created.`,
         timestamp: new Date().getTime(),
         user: user,
       },
@@ -74,7 +74,7 @@ export class FeatureToggleService {
 
     await this.auditRepository.create(
       {
-        message: `Feature '${featureToggle.key}' was updated.`,
+        message: `Feature Toggle '${featureToggle.key}' was updated.`,
         timestamp: new Date().getTime(),
         user: user,
       },

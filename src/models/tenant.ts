@@ -1,5 +1,5 @@
 export interface ITenant {
-  id: string;
+  key: string;
 
   name: string;
 

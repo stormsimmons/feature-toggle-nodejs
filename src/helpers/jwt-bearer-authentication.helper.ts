@@ -64,7 +64,7 @@ export class JwtBearerAuthenticationHelper {
 
   public static getUser(request: Hapi.Request): string {
     if (!JwtBearerAuthenticationHelper.configuation) {
-      return null;
+      return 'foo.bar@example.com';
     }
 
     const header: string = request.headers['authorization'];
