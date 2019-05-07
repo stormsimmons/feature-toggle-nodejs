@@ -21,7 +21,7 @@
     "@types/hapi": "^18.0.2",
     "@types/joi": "^14.3.3",
     "@types/mongodb": "^3.1.26",
-    "@types/node": "^11.13.9",
+    "@types/node": "^11.13.10",
     "prettier": "^1.17.0",
     "ts-node": "^8.1.0",
     "typescript": "^3.4.5"

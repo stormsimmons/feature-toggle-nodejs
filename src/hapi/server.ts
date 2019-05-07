@@ -5,7 +5,6 @@ import { AuditRepository, TenantRepository } from '../repositories';
 import { IFeatureToggle, ITenant } from '../models';
 import { JwtBearerAuthenticationHelper, TenantIdHelper } from '../helpers';
 import { FeatureToggleService, TenantService } from '../services';
-import { tenantJoiSchema } from '../validators/tenant';
 
 export class Server {
   protected server: Hapi.Server = null;
@@ -16,6 +15,7 @@ export class Server {
     protected featureToggleService: FeatureToggleService,
     protected tenantRepository: TenantRepository,
     protected tenantService: TenantService,
+    protected multiTenancy: boolean,
   ) {
     this.server = new Hapi.Server({
       ...options,
@@ -30,13 +30,17 @@ export class Server {
   }
 
   public configure(): void {
+    const optionsValidateParams = this.multiTenancy ? { tenantId: Joi.string().required() } : {};
+
+    const prefix: string = this.multiTenancy ? '/api/{tenantId}' : '/api';
+
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
         if (!JwtBearerAuthenticationHelper.authenticated(request)) {
           return h.response().code(401);
         }
 
-        if (!(await this.authorizedTenant(request))) {
+        if (this.multiTenancy && !(await this.authorizedTenant(request))) {
           return h.response().code(403);
         }
 
@@ -57,9 +61,9 @@ export class Server {
       options: {
         tags: ['api'],
         validate: {
-          params: {
-            tenantId: Joi.string().required(),
-          },
+          params: this.getOptionsValidateParams({
+            ...optionsValidateParams,
+          }),
           query: {
             user: Joi.string()
               .optional()
@@ -67,7 +71,7 @@ export class Server {
           },
         },
       },
-      path: '/api/{tenantId}/audit',
+      path: `${prefix}/audit`,
     });
 
     this.server.route({
@@ -76,7 +80,7 @@ export class Server {
           return h.response().code(401);
         }
 
-        if (!(await this.authorizedTenant(request))) {
+        if (this.multiTenancy && !(await this.authorizedTenant(request))) {
           return h.response().code(403);
         }
 
@@ -94,12 +98,12 @@ export class Server {
       options: {
         tags: ['api'],
         validate: {
-          params: {
-            tenantId: Joi.string().required(),
-          },
+          params: this.getOptionsValidateParams({
+            ...optionsValidateParams,
+          }),
         },
       },
-      path: '/api/{tenantId}/feature-toggle',
+      path: `${prefix}/feature-toggle`,
     });
 
     this.server.route({
@@ -108,7 +112,7 @@ export class Server {
           return h.response().code(401);
         }
 
-        if (!(await this.authorizedTenant(request))) {
+        if (this.multiTenancy && !(await this.authorizedTenant(request))) {
           return h.response().code(403);
         }
 
@@ -128,13 +132,13 @@ export class Server {
       options: {
         tags: ['api'],
         validate: {
-          params: {
+          params: this.getOptionsValidateParams({
+            ...optionsValidateParams,
             key: Joi.string().required(),
-            tenantId: Joi.string().required(),
-          },
+          }),
         },
       },
-      path: '/api/{tenantId}/feature-toggle/{key}',
+      path: `${prefix}/feature-toggle/{key}`,
     });
 
     this.server.route({
@@ -156,15 +160,15 @@ export class Server {
       options: {
         tags: ['api'],
         validate: {
-          params: {
+          params: this.getOptionsValidateParams({
+            ...optionsValidateParams,
             consumer: Joi.string().required(),
             environmentKey: Joi.string().required(),
             key: Joi.string().required(),
-            tenantId: Joi.string().required(),
-          },
+          }),
         },
       },
-      path: '/api/{tenantId}/feature-toggle/{key}/enabled/{environmentKey}/{consumer}',
+      path: `${prefix}/feature-toggle/{key}/enabled/{environmentKey}/{consumer}`,
     });
 
     this.server.route({
@@ -173,7 +177,7 @@ export class Server {
           return h.response().code(401);
         }
 
-        if (!(await this.authorizedTenant(request))) {
+        if (this.multiTenancy && !(await this.authorizedTenant(request))) {
           return h.response().code(403);
         }
 
@@ -193,14 +197,14 @@ export class Server {
       options: {
         tags: ['api'],
         validate: {
-          params: {
+          params: this.getOptionsValidateParams({
+            ...optionsValidateParams,
             key: Joi.string().required(),
-            tenantId: Joi.string().required(),
-          },
+          }),
           payload: Validators.featureToggleJoiSchema,
         },
       },
-      path: '/api/{tenantId}/feature-toggle/{key}',
+      path: `${prefix}/feature-toggle/{key}`,
     });
 
     this.server.route({
@@ -209,7 +213,7 @@ export class Server {
           return h.response().code(401);
         }
 
-        if (!(await this.authorizedTenant(request))) {
+        if (this.multiTenancy && !(await this.authorizedTenant(request))) {
           return h.response().code(403);
         }
 
@@ -229,89 +233,91 @@ export class Server {
       options: {
         tags: ['api'],
         validate: {
-          params: {
+          params: this.getOptionsValidateParams({
+            ...optionsValidateParams,
             key: Joi.string().required(),
-            tenantId: Joi.string().required(),
-          },
+          }),
           payload: Validators.featureToggleJoiSchema,
         },
       },
-      path: '/api/{tenantId}/feature-toggle/{key}',
+      path: `${prefix}/feature-toggle/{key}`,
     });
 
-    this.server.route({
-      handler: async (request: Hapi.Request, h) => {
-        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
-          return h.response().code(401);
-        }
+    if (this.multiTenancy) {
+      this.server.route({
+        handler: async (request: Hapi.Request, h) => {
+          if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+            return h.response().code(401);
+          }
 
-        const tenants = await this.tenantService.findAll(JwtBearerAuthenticationHelper.getUser(request));
+          const tenants = await this.tenantService.findAll(JwtBearerAuthenticationHelper.getUser(request));
 
-        return h.response(tenants).code(200);
-      },
-      method: 'GET',
-      options: {
-        tags: ['api'],
-      },
-      path: '/api/tenant',
-    });
-
-    this.server.route({
-      handler: async (request: Hapi.Request, h) => {
-        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
-          return h.response().code(401);
-        }
-
-        const tenant = await this.tenantService.create(
-          request.payload as ITenant,
-          JwtBearerAuthenticationHelper.getUser(request),
-        );
-
-        if (!tenant) {
-          return h.response().code(303);
-        }
-
-        return h.response(tenant).code(200);
-      },
-      method: 'POST',
-      options: {
-        tags: ['api'],
-        validate: {
-          payload: tenantJoiSchema,
+          return h.response(tenants).code(200);
         },
-      },
-      path: '/api/tenant',
-    });
+        method: 'GET',
+        options: {
+          tags: ['api'],
+        },
+        path: '/api/tenant',
+      });
 
-    this.server.route({
-      handler: async (request: Hapi.Request, h) => {
-        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
-          return h.response().code(401);
-        }
+      this.server.route({
+        handler: async (request: Hapi.Request, h) => {
+          if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+            return h.response().code(401);
+          }
 
-        const tenant = await this.tenantService.update(
-          request.payload as ITenant,
-          JwtBearerAuthenticationHelper.getUser(request),
-        );
+          const tenant = await this.tenantService.create(
+            request.payload as ITenant,
+            JwtBearerAuthenticationHelper.getUser(request),
+          );
 
-        if (!tenant) {
-          return h.response().code(404);
-        }
+          if (!tenant) {
+            return h.response().code(303);
+          }
 
-        return h.response(tenant).code(200);
-      },
-      method: 'PUT',
-      options: {
-        tags: ['api'],
-        validate: {
-          params: {
-            key: Joi.string().required(),
+          return h.response(tenant).code(200);
+        },
+        method: 'POST',
+        options: {
+          tags: ['api'],
+          validate: {
+            payload: Validators.tenantJoiSchema,
           },
-          payload: tenantJoiSchema,
         },
-      },
-      path: '/api/tenant/{key}',
-    });
+        path: '/api/tenant',
+      });
+
+      this.server.route({
+        handler: async (request: Hapi.Request, h) => {
+          if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+            return h.response().code(401);
+          }
+
+          const tenant = await this.tenantService.update(
+            request.payload as ITenant,
+            JwtBearerAuthenticationHelper.getUser(request),
+          );
+
+          if (!tenant) {
+            return h.response().code(404);
+          }
+
+          return h.response(tenant).code(200);
+        },
+        method: 'PUT',
+        options: {
+          tags: ['api'],
+          validate: {
+            params: {
+              key: Joi.string().required(),
+            },
+            payload: Validators.tenantJoiSchema,
+          },
+        },
+        path: '/api/tenant/{key}',
+      });
+    }
   }
 
   public getServer(): Hapi.Server {
@@ -334,5 +340,13 @@ export class Server {
     }
 
     return true;
+  }
+
+  protected getOptionsValidateParams(obj: any): any {
+    if (Object.keys(obj).length === 0) {
+      return null;
+    }
+
+    return obj;
   }
 }

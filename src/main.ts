@@ -8,9 +8,10 @@ import {
   Server,
   JwtBearerAuthenticationHelper,
   FeatureToggleService,
+  TenantRepository,
+  TenantService,
 } from './index';
-import { TenantRepository } from './repositories';
-import { TenantService } from './services';
+import { CONFIGURATION } from './configuration';
 
 (async () => {
   const swaggerOptions = {
@@ -29,7 +30,7 @@ import { TenantService } from './services';
     },
   };
 
-  const mongoClient = await MongoDB.MongoClient.connect(process.env.CONNECTION_STRING || 'mongodb://localhost:27017', {
+  const mongoClient = await MongoDB.MongoClient.connect(CONFIGURATION.DATABASE.CONNECTION_STRING, {
     useNewUrlParser: true,
   });
 
@@ -41,13 +42,14 @@ import { TenantService } from './services';
 
   const server: Server = new Server(
     {
-      host: process.env.HOST || 'localhost',
-      port: parseInt(process.env.PORT, 10) || 8080,
+      host: CONFIGURATION.HOST,
+      port: CONFIGURATION.PORT,
     },
     auditRepository,
     featureToggleService,
     tenantRepository,
     tenantService,
+    CONFIGURATION.MUTLI_TENACITY.ENABLED,
   );
 
   await server.getServer().register([
@@ -59,14 +61,14 @@ import { TenantService } from './services';
     },
   ]);
 
-  if (process.env.AUDIENCE && process.env.AUTHORITY) {
+  if (CONFIGURATION.AUTHENTICATION.ENABLED) {
     await JwtBearerAuthenticationHelper.configure({
-      audience: process.env.AUDIENCE || 'implicit',
-      authority: process.env.AUTHORITY || 'https://demo.identityserver.io',
+      audience: CONFIGURATION.AUTHENTICATION.AUDIENCE,
+      authority: CONFIGURATION.AUTHENTICATION.AUTHORITY,
     });
   }
 
   await server.getServer().start();
 
-  console.log(`listening on ${process.env.HOST || 'localhost'}:${process.env.PORT || 8080}`);
+  console.log(`listening on ${CONFIGURATION.HOST}:${CONFIGURATION.PORT}`);
 })();

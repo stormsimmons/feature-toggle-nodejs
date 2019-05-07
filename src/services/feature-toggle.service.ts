@@ -1,5 +1,6 @@
 import { FeatureToggleRepository, AuditRepository } from '../repositories';
-import { IFeatureToggle } from '../models';
+import { IFeatureToggle, IAudit } from '../models';
+import { Diff } from '../utils';
 
 export class FeatureToggleService {
   constructor(protected auditRepository: AuditRepository, protected featureToggleRepository: FeatureToggleRepository) {}
@@ -81,6 +82,14 @@ export class FeatureToggleService {
       tenantId,
     );
 
+    await this.auditFeatureToggle(exisitingFeatureToggle, featureToggle);
+
     return featureToggle;
+  }
+
+  protected async auditFeatureToggle(obj1: IFeatureToggle, obj2: IFeatureToggle): Promise<void> {
+    const diff = Diff.getDiff(obj1, obj2);
+
+    console.log(JSON.stringify(diff, null, 2));
   }
 }
