@@ -49,7 +49,7 @@ import { CONFIGURATION } from './configuration';
     featureToggleService,
     tenantRepository,
     tenantService,
-    CONFIGURATION.MUTLI_TENACITY.ENABLED,
+    CONFIGURATION.MULTI_TENANCY.ENABLED,
   );
 
   await server.getServer().register([
