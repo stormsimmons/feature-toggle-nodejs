@@ -87,7 +87,7 @@ export class Server {
         return h
           .response(
             await this.featureToggleService.findAll(
-              request.query.includeArchived === 'true',
+              request.query.includeArchived ? (request.query.includeArchived as any) : false,
               JwtBearerAuthenticationHelper.getUser(request),
               TenantIdHelper.getTenantId(request),
             ),
@@ -101,6 +101,11 @@ export class Server {
           params: this.getOptionsValidateParams({
             ...optionsValidateParams,
           }),
+          query: {
+            includeArchived: Joi.boolean()
+              .optional()
+              .allow(null),
+          },
         },
       },
       path: `${prefix}/feature-toggle`,

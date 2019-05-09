@@ -93,7 +93,10 @@ export class FeatureToggleRepository {
         key: featureToggle.key,
         tenantId,
       },
-      featureToggle,
+      {
+        ...featureToggle,
+        tenantId,
+      },
     );
 
     return featureToggle;
