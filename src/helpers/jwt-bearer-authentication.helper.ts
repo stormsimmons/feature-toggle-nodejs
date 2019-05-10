@@ -87,6 +87,6 @@ export class JwtBearerAuthenticationHelper {
 
     const decodedToken = JsonWebToken.decode(token, { complete: true });
 
-    return decodedToken.payload.email;
+    return decodedToken.payload.email.toLowerCase();
   }
 }

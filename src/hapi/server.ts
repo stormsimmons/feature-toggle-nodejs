@@ -340,7 +340,7 @@ export class Server {
       return false;
     }
 
-    if (!tenant.users.includes(user)) {
+    if (!tenant.users.map((x: string) => x.toLowerCase()).includes(user)) {
       return false;
     }
 

@@ -30,7 +30,7 @@ export class TenantService {
   public async update(tenant: ITenant, user: string): Promise<ITenant> {
     const existingTenant: ITenant = await this.tenantRepository.find(tenant.key);
 
-    if (existingTenant) {
+    if (!existingTenant) {
       return null;
     }
 

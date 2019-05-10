@@ -12,7 +12,7 @@ export const CONFIGURATION = {
   },
   HOST: process.env.HOST || 'localhost',
   MULTI_TENANCY: {
-    ENABLED: false,
+    ENABLED: true,
   },
   PORT: parseInt(process.env.PORT, 10) || 8080,
 };

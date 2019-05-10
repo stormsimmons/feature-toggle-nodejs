@@ -3,7 +3,5 @@ export interface ITenant {
 
   name: string;
 
-  selected: boolean;
-
   users: Array<string>;
 }
