@@ -1,0 +1,1 @@
+web: npm test && node dist/main.js
