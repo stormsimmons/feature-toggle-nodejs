@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {
     "lint": "prettier --config prettier.config.js --list-different src/**/*.ts",
+    "postinstall": "tsc",
     "start": "tsc && node dist/main.js",
     "test": "tsc"
   },
