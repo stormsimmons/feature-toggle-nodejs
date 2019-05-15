@@ -122,7 +122,7 @@ export class Server {
         }
 
         const featureToggle = await this.featureToggleService.find(
-          request.params.key,
+          request.params.key.toLowerCase(),
           JwtBearerAuthenticationHelper.getUser(request),
           TenantIdHelper.getTenantId(request),
         );
@@ -149,9 +149,9 @@ export class Server {
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
         const result: boolean = await this.featureToggleService.enabled(
-          request.params.key,
-          request.params.environmentKey,
-          request.params.consumer,
+          request.params.key.toLowerCase(),
+          request.params.environmentKey.toLowerCase(),
+          request.params.consumer.toLowerCase(),
           TenantIdHelper.getTenantId(request),
         );
 
