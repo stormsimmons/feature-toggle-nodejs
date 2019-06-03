@@ -15,6 +15,8 @@ import { CONFIGURATION } from './configuration';
 
 (async () => {
   const swaggerOptions = {
+    schemes: ['https'], // TODO
+    host: 'foggle.io', // TODO
     documentationPath: '/swagger',
     info: {
       contact: {

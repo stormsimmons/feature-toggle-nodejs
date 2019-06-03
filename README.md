@@ -16,7 +16,7 @@ Step 2:
 
 Step 3:
 
-`docker build --no-cache -t feature-toggle-nodejs.`
+`docker build --no-cache -t feature-toggle-nodejs .`
 
 Step 4:
 
