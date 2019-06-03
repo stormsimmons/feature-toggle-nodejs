@@ -27,7 +27,8 @@ import { CONFIGURATION } from './configuration';
         name: 'MIT',
         url: 'https://opensource.org/licenses/MIT',
       },
-      title: 'Feature Toggle Node.js',
+      // title: 'Feature Toggle Node.js',
+      title: 'Foggle', // TODO
       version: process.env.npm_package_version,
     },
   };
