@@ -1,4 +1,4 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 
 export class TenantIdHelper {
   public static getTenantId(request: Hapi.Request): string {

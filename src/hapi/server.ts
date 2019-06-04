@@ -1,4 +1,4 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import * as Joi from 'joi';
 import { Validators } from '../validators';
 import { AuditRepository, TenantRepository } from '../repositories';

@@ -1,7 +1,7 @@
 import * as HapiSwagger from 'hapi-swagger';
-import * as Inert from 'inert';
+import * as Inert from '@hapi/inert';
 import * as MongoDB from 'mongodb';
-import * as Vision from 'vision';
+import * as Vision from '@hapi/vision';
 import {
   AuditRepository,
   FeatureToggleRepository,
@@ -15,8 +15,8 @@ import { CONFIGURATION } from './configuration';
 
 (async () => {
   const swaggerOptions = {
-    schemes: ['https'], // TODO
-    host: 'foggle.io', // TODO
+    schemes: ['https', 'http'],
+    // host: 'foggle.io', // TODO
     documentationPath: '/swagger',
     info: {
       contact: {
@@ -27,8 +27,8 @@ import { CONFIGURATION } from './configuration';
         name: 'MIT',
         url: 'https://opensource.org/licenses/MIT',
       },
-      // title: 'Feature Toggle Node.js',
-      title: 'Foggle', // TODO
+      title: 'Feature Toggle Node.js',
+      // title: 'Foggle', // TODO
       version: process.env.npm_package_version,
     },
   };

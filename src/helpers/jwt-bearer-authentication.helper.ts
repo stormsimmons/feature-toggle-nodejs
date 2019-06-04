@@ -1,5 +1,5 @@
 import Axios from 'axios';
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import * as JsonWebToken from 'jsonwebtoken';
 import * as JwtToPem from 'jwk-to-pem';
 

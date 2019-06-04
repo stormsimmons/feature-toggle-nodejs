@@ -2,7 +2,7 @@ FROM node:10
 
 WORKDIR /usr/src/app
 
-RUN git clone https://github.com/xyzblocks/feature-toggle-nodejs.git .
+COPY . ./
 
 RUN npm install
 
