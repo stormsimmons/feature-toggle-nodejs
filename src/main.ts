@@ -15,8 +15,6 @@ import { CONFIGURATION } from './configuration';
 
 (async () => {
   const swaggerOptions = {
-    schemes: ['https', 'http'],
-    // host: 'foggle.io', // TODO
     documentationPath: '/swagger',
     info: {
       contact: {
@@ -28,7 +26,6 @@ import { CONFIGURATION } from './configuration';
         url: 'https://opensource.org/licenses/MIT',
       },
       title: 'Feature Toggle Node.js',
-      // title: 'Foggle', // TODO
       version: process.env.npm_package_version,
     },
   };

@@ -35,6 +35,6 @@
     "joi": "^14.3.1",
     "jsonwebtoken": "^8.5.1",
     "jwk-to-pem": "^2.0.1",
-    "mongodb": "^3.2.6"
+    "mongodb": "^3.2.7"
   }
 }
