@@ -58,31 +58,6 @@ export class FeatureToggleRepository {
       .toArray();
   }
 
-  public async findAllByUser(includeArchived: boolean, user: string, tenantId: string): Promise<Array<IFeatureToggle>> {
-    const collection: MongoDB.Collection = this.db.collection('feature-toggles');
-
-    const query: any = {
-      tenantId,
-      user,
-    };
-
-    if (!includeArchived) {
-      query.archived = false;
-    }
-
-    return await collection
-      .find(query, {
-        projection: {
-          _id: 0,
-          tenantId: 0,
-        },
-      })
-      .sort({
-        key: 1,
-      })
-      .toArray();
-  }
-
   public async update(featureToggle: IFeatureToggle, tenantId: string): Promise<IFeatureToggle> {
     featureToggle.updatedAt = new Date().getTime();
 
