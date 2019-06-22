@@ -98,9 +98,7 @@ export class FeatureToggleService {
     if (diff.archived) {
       await this.auditRepository.create(
         {
-          message: `Feature Toggle '${obj1.key}': archived changed from '${diff.archived.previous}' to '${
-            diff.archived.current
-          }'`,
+          message: `Feature Toggle '${obj1.key}': archived changed from '${diff.archived.previous}' to '${diff.archived.current}'`,
           timestamp: new Date().getTime(),
           user: user,
         },
@@ -111,9 +109,7 @@ export class FeatureToggleService {
     if (diff.createdAt) {
       await this.auditRepository.create(
         {
-          message: `Feature Toggle '${obj1.key}': createdAt changed from '${diff.createdAt.previous}' to '${
-            diff.createdAt.current
-          }'`,
+          message: `Feature Toggle '${obj1.key}': createdAt changed from '${diff.createdAt.previous}' to '${diff.createdAt.current}'`,
           timestamp: new Date().getTime(),
           user: user,
         },
@@ -135,9 +131,7 @@ export class FeatureToggleService {
     if (diff.updatedAt) {
       await this.auditRepository.create(
         {
-          message: `Feature Toggle '${obj1.key}': updatedAt changed from '${diff.updatedAt.previous}' to '${
-            diff.updatedAt.current
-          }'`,
+          message: `Feature Toggle '${obj1.key}': updatedAt changed from '${diff.updatedAt.previous}' to '${diff.updatedAt.current}'`,
           timestamp: new Date().getTime(),
           user: user,
         },
@@ -168,9 +162,7 @@ export class FeatureToggleService {
       if (environmentDiff.enabled) {
         await this.auditRepository.create(
           {
-            message: `Feature Toggle '${obj1.key}', Environment '${environment.key}': enabled changed from '${
-              environmentDiff.enabled.previous
-            }' to '${environmentDiff.enabled.current}'`,
+            message: `Feature Toggle '${obj1.key}', Environment '${environment.key}': enabled changed from '${environmentDiff.enabled.previous}' to '${environmentDiff.enabled.current}'`,
             timestamp: new Date().getTime(),
             user: user,
           },
@@ -181,9 +173,7 @@ export class FeatureToggleService {
       if (environmentDiff.enabledForAll) {
         await this.auditRepository.create(
           {
-            message: `Feature Toggle '${obj1.key}', Environment '${environment.key}': enabled changed from '${
-              environmentDiff.enabledForAll.previous
-            }' to '${environmentDiff.enabledForAll.current}'`,
+            message: `Feature Toggle '${obj1.key}', Environment '${environment.key}': enabled changed from '${environmentDiff.enabledForAll.previous}' to '${environmentDiff.enabledForAll.current}'`,
             timestamp: new Date().getTime(),
             user: user,
           },
@@ -194,9 +184,7 @@ export class FeatureToggleService {
       if (environmentDiff.name) {
         await this.auditRepository.create(
           {
-            message: `Feature Toggle '${obj1.key}', Environment '${environment.key}': name changed from '${
-              environmentDiff.name.previous
-            }' to '${environmentDiff.name.current}'`,
+            message: `Feature Toggle '${obj1.key}', Environment '${environment.key}': name changed from '${environmentDiff.name.previous}' to '${environmentDiff.name.current}'`,
             timestamp: new Date().getTime(),
             user: user,
           },
