@@ -32,6 +32,7 @@ import { CONFIGURATION } from './configuration';
 
   const mongoClient = await MongoDB.MongoClient.connect(CONFIGURATION.DATABASE.CONNECTION_STRING, {
     useNewUrlParser: true,
+    useUnifiedTopology: true,
   });
 
   const auditRepository: AuditRepository = new AuditRepository(mongoClient);
