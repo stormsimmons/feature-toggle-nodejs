@@ -27,7 +27,7 @@ import { CONFIGURATION } from './configuration';
         name: 'MIT',
         url: 'https://opensource.org/licenses/MIT',
       },
-      title: 'Foggle', 
+      title: 'Foggle',
       version: process.env.npm_package_version,
     },
   };
