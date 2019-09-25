@@ -1,6 +1,6 @@
-import { FeatureToggleRepository, AuditRepository } from '../repositories';
-import { IFeatureToggle, IEnvironment } from '../models';
+import { AuditRepository, FeatureToggleRepository } from '../repositories';
 import { Diff } from '../utils';
+import { IEnvironment, IFeatureToggle } from '../models';
 
 export class FeatureToggleService {
   constructor(protected auditRepository: AuditRepository, protected featureToggleRepository: FeatureToggleRepository) {}

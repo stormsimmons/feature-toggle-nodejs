@@ -2,6 +2,7 @@ import * as HapiSwagger from 'hapi-swagger';
 import * as Inert from '@hapi/inert';
 import * as MongoDB from 'mongodb';
 import * as Vision from '@hapi/vision';
+import { CONFIGURATION } from './configuration';
 import {
   AuditRepository,
   FeatureToggleRepository,
@@ -11,7 +12,6 @@ import {
   TenantRepository,
   TenantService,
 } from './index';
-import { CONFIGURATION } from './configuration';
 
 (async () => {
   const swaggerOptions = {
