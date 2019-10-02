@@ -20,17 +20,18 @@
   "devDependencies": {
     "@types/hapi__hapi": "^18.2.5",
     "@types/joi": "^14.3.3",
-    "@types/mongodb": "^3.3.1",
-    "@types/node": "^12.7.5",
+    "@types/mongodb": "^3.3.4",
+    "@types/node": "^12.7.9",
     "prettier": "^1.18.2",
     "ts-node": "^8.4.1",
     "typescript": "^3.6.3"
   },
   "dependencies": {
+    "@hapi/address": "^2.1.2",
     "@hapi/hapi": "^18.4.0",
     "@hapi/inert": "^5.2.2",
     "@hapi/vision": "^5.5.4",
-    "aws-sdk": "^2.531.0",
+    "aws-sdk": "^2.540.0",
     "axios": "^0.19.0",
     "hapi-swagger": "^10.1.2",
     "joi": "^14.3.1",
