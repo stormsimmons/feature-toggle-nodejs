@@ -1,10 +1,10 @@
 import * as Hapi from '@hapi/hapi';
 import * as Joi from 'joi';
-import { Validators } from '../validators';
 import { AuditRepository, TenantRepository } from '../repositories';
+import { FeatureToggleService, TenantService } from '../services';
 import { IFeatureToggle, ITenant } from '../models';
 import { JwtBearerAuthenticationHelper, TenantIdHelper } from '../helpers';
-import { FeatureToggleService, TenantService } from '../services';
+import { Validators } from '../validators';
 
 export class Server {
   protected server: Hapi.Server = null;
