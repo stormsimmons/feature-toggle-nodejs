@@ -50,7 +50,6 @@ import {
     featureToggleService,
     tenantRepository,
     tenantService,
-    CONFIGURATION.MULTI_TENANCY.ENABLED,
   );
 
   await server.getServer().register([

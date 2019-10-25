@@ -15,7 +15,6 @@ export class Server {
     protected featureToggleService: FeatureToggleService,
     protected tenantRepository: TenantRepository,
     protected tenantService: TenantService,
-    protected multiTenancy: boolean,
   ) {
     this.server = new Hapi.Server({
       ...options,
@@ -30,9 +29,9 @@ export class Server {
   }
 
   public configure(): void {
-    const optionsValidateParams = this.multiTenancy ? { tenantId: Joi.string().required() } : {};
+    const optionsValidateParams = { tenantId: Joi.string().required() };
 
-    const prefix: string = this.multiTenancy ? '/api/{tenantId}' : '/api';
+    const prefix: string = '/api/{tenantId}';
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
@@ -40,7 +39,7 @@ export class Server {
           return h.response().code(401);
         }
 
-        if (this.multiTenancy && !(await this.authorizedTenant(request))) {
+        if (!(await this.authorizedTenant(request))) {
           return h.response().code(403);
         }
 
@@ -80,7 +79,7 @@ export class Server {
           return h.response().code(401);
         }
 
-        if (this.multiTenancy && !(await this.authorizedTenant(request))) {
+        if (!(await this.authorizedTenant(request))) {
           return h.response().code(403);
         }
 
@@ -117,7 +116,7 @@ export class Server {
           return h.response().code(401);
         }
 
-        if (this.multiTenancy && !(await this.authorizedTenant(request))) {
+        if (!(await this.authorizedTenant(request))) {
           return h.response().code(403);
         }
 
@@ -182,7 +181,7 @@ export class Server {
           return h.response().code(401);
         }
 
-        if (this.multiTenancy && !(await this.authorizedTenant(request))) {
+        if (!(await this.authorizedTenant(request))) {
           return h.response().code(403);
         }
 
@@ -218,7 +217,7 @@ export class Server {
           return h.response().code(401);
         }
 
-        if (this.multiTenancy && !(await this.authorizedTenant(request))) {
+        if (!(await this.authorizedTenant(request))) {
           return h.response().code(403);
         }
 
@@ -248,81 +247,79 @@ export class Server {
       path: `${prefix}/feature-toggle/{key}`,
     });
 
-    if (this.multiTenancy) {
-      this.server.route({
-        handler: async (request: Hapi.Request, h) => {
-          if (!JwtBearerAuthenticationHelper.authenticated(request)) {
-            return h.response().code(401);
-          }
+    this.server.route({
+      handler: async (request: Hapi.Request, h) => {
+        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+          return h.response().code(401);
+        }
 
-          const tenants = await this.tenantService.findAll(JwtBearerAuthenticationHelper.getUser(request));
+        const tenants = await this.tenantService.findAll(JwtBearerAuthenticationHelper.getUser(request));
 
-          return h.response(tenants).code(200);
+        return h.response(tenants).code(200);
+      },
+      method: 'GET',
+      options: {
+        tags: ['api'],
+      },
+      path: '/api/tenant',
+    });
+
+    this.server.route({
+      handler: async (request: Hapi.Request, h) => {
+        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+          return h.response().code(401);
+        }
+
+        const tenant = await this.tenantService.create(
+          request.payload as ITenant,
+          JwtBearerAuthenticationHelper.getUser(request),
+        );
+
+        if (!tenant) {
+          return h.response().code(303);
+        }
+
+        return h.response(tenant).code(200);
+      },
+      method: 'POST',
+      options: {
+        tags: ['api'],
+        validate: {
+          payload: Validators.tenantJoiSchema,
         },
-        method: 'GET',
-        options: {
-          tags: ['api'],
-        },
-        path: '/api/tenant',
-      });
+      },
+      path: '/api/tenant',
+    });
 
-      this.server.route({
-        handler: async (request: Hapi.Request, h) => {
-          if (!JwtBearerAuthenticationHelper.authenticated(request)) {
-            return h.response().code(401);
-          }
+    this.server.route({
+      handler: async (request: Hapi.Request, h) => {
+        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+          return h.response().code(401);
+        }
 
-          const tenant = await this.tenantService.create(
-            request.payload as ITenant,
-            JwtBearerAuthenticationHelper.getUser(request),
-          );
+        const tenant = await this.tenantService.update(
+          request.payload as ITenant,
+          JwtBearerAuthenticationHelper.getUser(request),
+        );
 
-          if (!tenant) {
-            return h.response().code(303);
-          }
+        if (!tenant) {
+          return h.response().code(404);
+        }
 
-          return h.response(tenant).code(200);
-        },
-        method: 'POST',
-        options: {
-          tags: ['api'],
-          validate: {
-            payload: Validators.tenantJoiSchema,
+        return h.response(tenant).code(200);
+      },
+      method: 'PUT',
+      options: {
+        tags: ['api'],
+        validate: {
+          params: {
+            key: Joi.string().required(),
           },
+          payload: Validators.tenantJoiSchema,
         },
-        path: '/api/tenant',
-      });
-
-      this.server.route({
-        handler: async (request: Hapi.Request, h) => {
-          if (!JwtBearerAuthenticationHelper.authenticated(request)) {
-            return h.response().code(401);
-          }
-
-          const tenant = await this.tenantService.update(
-            request.payload as ITenant,
-            JwtBearerAuthenticationHelper.getUser(request),
-          );
-
-          if (!tenant) {
-            return h.response().code(404);
-          }
-
-          return h.response(tenant).code(200);
-        },
-        method: 'PUT',
-        options: {
-          tags: ['api'],
-          validate: {
-            params: {
-              key: Joi.string().required(),
-            },
-            payload: Validators.tenantJoiSchema,
-          },
-        },
-        path: '/api/tenant/{key}',
-      });
-    }
+      },
+      path: '/api/tenant/{key}',
+    });
   }
 
   public getServer(): Hapi.Server {

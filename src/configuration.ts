@@ -11,8 +11,5 @@ export const CONFIGURATION = {
     CONNECTION_STRING: process.env.CONNECTION_STRING || 'mongodb://localhost:27017',
   },
   HOST: process.env.HOST || 'localhost',
-  MULTI_TENANCY: {
-    ENABLED: true,
-  },
   PORT: parseInt(process.env.PORT, 10) || 8080,
 };
