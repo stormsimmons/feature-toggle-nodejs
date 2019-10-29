@@ -2,16 +2,17 @@ import * as HapiSwagger from 'hapi-swagger';
 import * as Inert from '@hapi/inert';
 import * as MongoDB from 'mongodb';
 import * as Vision from '@hapi/vision';
-import { CONFIGURATION } from './configuration';
+import * as DotEnv from 'dotenv';
 import {
   AuditRepository,
   FeatureToggleRepository,
   Server,
-  JwtBearerAuthenticationHelper,
   FeatureToggleService,
   TenantRepository,
   TenantService,
 } from './index';
+
+DotEnv.config();
 
 (async () => {
   const swaggerOptions = {
@@ -30,7 +31,7 @@ import {
     },
   };
 
-  const mongoClient = await MongoDB.MongoClient.connect(CONFIGURATION.DATABASE.CONNECTION_STRING, {
+  const mongoClient = await MongoDB.MongoClient.connect(process.env.CONNECTION_STRING, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
@@ -43,8 +44,8 @@ import {
 
   const server: Server = new Server(
     {
-      host: CONFIGURATION.HOST,
-      port: CONFIGURATION.PORT,
+      host: process.env.HOST || 'localhost',
+      port: parseInt(process.env.PORT, 10) || 8080,
     },
     auditRepository,
     featureToggleService,
@@ -61,14 +62,7 @@ import {
     },
   ]);
 
-  if (CONFIGURATION.AUTHENTICATION.ENABLED) {
-    await JwtBearerAuthenticationHelper.configure({
-      audience: CONFIGURATION.AUTHENTICATION.AUDIENCE,
-      authority: CONFIGURATION.AUTHENTICATION.AUTHORITY,
-    });
-  }
-
   await server.getServer().start();
 
-  console.log(`listening on ${CONFIGURATION.HOST}:${CONFIGURATION.PORT}`);
+  console.log(`listening on ${process.env.HOST || 'localhost'}:${parseInt(process.env.PORT, 10) || 8080}`);
 })();

@@ -3,7 +3,7 @@ import * as Joi from 'joi';
 import { AuditRepository, TenantRepository } from '../repositories';
 import { FeatureToggleService, TenantService } from '../services';
 import { IFeatureToggle, ITenant } from '../models';
-import { JwtBearerAuthenticationHelper, TenantIdHelper } from '../helpers';
+import { RequestHelper } from '../helpers';
 import { Validators } from '../validators';
 
 export class Server {
@@ -35,7 +35,9 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
-        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+        const requestHelper = new RequestHelper(process.env.OPEN_ID_AUTHORITY, request);
+
+        if (!(await requestHelper.authenticated())) {
           return h.response().code(401);
         }
 
@@ -46,15 +48,12 @@ export class Server {
         if (request.query.user) {
           return h
             .response(
-              await this.auditRepository.findAllByUser(
-                request.query.user as string,
-                TenantIdHelper.getTenantId(request),
-              ),
+              await this.auditRepository.findAllByUser(request.query.user as string, requestHelper.getTenantId()),
             )
             .code(200);
         }
 
-        return h.response(await this.auditRepository.findAll(TenantIdHelper.getTenantId(request))).code(200);
+        return h.response(await this.auditRepository.findAll(requestHelper.getTenantId())).code(200);
       },
       method: 'GET',
       options: {
@@ -75,7 +74,9 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
-        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+        const requestHelper = new RequestHelper(process.env.OPEN_ID_AUTHORITY, request);
+
+        if (!(await requestHelper.authenticated())) {
           return h.response().code(401);
         }
 
@@ -87,8 +88,8 @@ export class Server {
           .response(
             await this.featureToggleService.findAll(
               request.query.includeArchived ? (request.query.includeArchived as any) : false,
-              JwtBearerAuthenticationHelper.getUser(request),
-              TenantIdHelper.getTenantId(request),
+              await requestHelper.getUserInfo(),
+              requestHelper.getTenantId(),
             ),
           )
           .code(200);
@@ -112,7 +113,9 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
-        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+        const requestHelper = new RequestHelper(process.env.OPEN_ID_AUTHORITY, request);
+
+        if (!(await requestHelper.authenticated())) {
           return h.response().code(401);
         }
 
@@ -122,8 +125,8 @@ export class Server {
 
         const featureToggle = await this.featureToggleService.find(
           request.params.key.toLowerCase(),
-          JwtBearerAuthenticationHelper.getUser(request),
-          TenantIdHelper.getTenantId(request),
+          await requestHelper.getUserInfo(),
+          requestHelper.getTenantId(),
         );
 
         if (!featureToggle) {
@@ -147,11 +150,13 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
+        const requestHelper = new RequestHelper(process.env.OPEN_ID_AUTHORITY, request);
+
         const result: boolean = await this.featureToggleService.enabled(
           request.params.key.toLowerCase(),
           request.params.environmentKey.toLowerCase(),
           request.params.consumer.toLowerCase(),
-          TenantIdHelper.getTenantId(request),
+          requestHelper.getTenantId(),
         );
 
         if (result === null) {
@@ -177,7 +182,9 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
-        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+        const requestHelper = new RequestHelper(process.env.OPEN_ID_AUTHORITY, request);
+
+        if (!(await requestHelper.authenticated())) {
           return h.response().code(401);
         }
 
@@ -187,8 +194,8 @@ export class Server {
 
         const featureToggle = await this.featureToggleService.create(
           request.payload as IFeatureToggle,
-          JwtBearerAuthenticationHelper.getUser(request),
-          TenantIdHelper.getTenantId(request),
+          await requestHelper.getUserInfo(),
+          requestHelper.getTenantId(),
         );
 
         if (!featureToggle) {
@@ -213,7 +220,9 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
-        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+        const requestHelper = new RequestHelper(process.env.OPEN_ID_AUTHORITY, request);
+
+        if (!(await requestHelper.authenticated())) {
           return h.response().code(401);
         }
 
@@ -223,8 +232,8 @@ export class Server {
 
         const featureToggle = await this.featureToggleService.update(
           request.payload as IFeatureToggle,
-          JwtBearerAuthenticationHelper.getUser(request),
-          TenantIdHelper.getTenantId(request),
+          await requestHelper.getUserInfo(),
+          requestHelper.getTenantId(),
         );
 
         if (!featureToggle) {
@@ -249,11 +258,13 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
-        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+        const requestHelper = new RequestHelper(process.env.OPEN_ID_AUTHORITY, request);
+
+        if (!(await requestHelper.authenticated())) {
           return h.response().code(401);
         }
 
-        const tenants = await this.tenantService.findAll(JwtBearerAuthenticationHelper.getUser(request));
+        const tenants = await this.tenantService.findAll(await requestHelper.getUserInfo());
 
         return h.response(tenants).code(200);
       },
@@ -266,14 +277,13 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
-        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+        const requestHelper = new RequestHelper(process.env.OPEN_ID_AUTHORITY, request);
+
+        if (!(await requestHelper.authenticated())) {
           return h.response().code(401);
         }
 
-        const tenant = await this.tenantService.create(
-          request.payload as ITenant,
-          JwtBearerAuthenticationHelper.getUser(request),
-        );
+        const tenant = await this.tenantService.create(request.payload as ITenant, await requestHelper.getUserInfo());
 
         if (!tenant) {
           return h.response().code(303);
@@ -293,14 +303,13 @@ export class Server {
 
     this.server.route({
       handler: async (request: Hapi.Request, h) => {
-        if (!JwtBearerAuthenticationHelper.authenticated(request)) {
+        const requestHelper = new RequestHelper(process.env.OPEN_ID_AUTHORITY, request);
+
+        if (!(await requestHelper.authenticated())) {
           return h.response().code(401);
         }
 
-        const tenant = await this.tenantService.update(
-          request.payload as ITenant,
-          JwtBearerAuthenticationHelper.getUser(request),
-        );
+        const tenant = await this.tenantService.update(request.payload as ITenant, await requestHelper.getUserInfo());
 
         if (!tenant) {
           return h.response().code(404);
@@ -327,9 +336,11 @@ export class Server {
   }
 
   protected async authorizedTenant(request: Hapi.Request): Promise<boolean> {
-    const user: string = JwtBearerAuthenticationHelper.getUser(request);
+    const requestHelper = new RequestHelper(process.env.OPEN_ID_AUTHORITY, request);
 
-    const tenantId: string = TenantIdHelper.getTenantId(request);
+    const user: string = await requestHelper.getUserInfo();
+
+    const tenantId: string = requestHelper.getTenantId();
 
     const tenant: ITenant = await this.tenantRepository.find(tenantId);
 
