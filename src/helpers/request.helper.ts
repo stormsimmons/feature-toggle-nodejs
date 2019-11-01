@@ -13,6 +13,10 @@ export class RequestHelper {
   public async authenticated(): Promise<boolean> {
     const token: string = this.getToken();
 
+    if (!token) {
+      return false;
+    }
+
     const decodedToken = JsonWebToken.decode(token, { complete: true });
 
     let key = (await this.getJwks()).keys.find((x) => x.kid === decodedToken.header.kid);
